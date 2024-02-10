@@ -1,12 +1,13 @@
 #include<iostream>
 #include<map>
+#include<numeric>
 
 #include <algorithm>
 
 #include <Game.hpp>
 #include <Settings.hpp>
 
-std::map<Suit, Color> SUIT_COLORS = {
+std::unordered_map<Suit, Color> SUIT_COLORS = {
     {Suit::Clubs, Color::Black},
     {Suit::Spades, Color::Black},
     {Suit::Hearts, Color::Red},
@@ -21,6 +22,23 @@ int clamp(int n, int min, int max) {
     if (n < min) return clamp(max - m, min, max);
     if (n > max) return clamp(m - max - 1, min, max);
     return n;
+}
+int get_difference(int val1, int val2) { return clamp(val1 - val2, 0, 13); }
+bool check_sandwich(const CardDeck& cards) {
+    std::list<int> card_values;
+    std::transform(cards.begin(), cards.end(), std::back_inserter(card_values), get_card_value);
+    for (int i = 0; i < SANDWICH_SIZE; i++) {
+        std::list<int> differences;
+        std::adjacent_difference(card_values.begin(), card_values.end(), std::back_inserter(differences), get_difference);
+        differences.pop_front();
+        if (std::adjacent_find(differences.begin(), differences.end(), std::not_equal_to<>()) == differences.end()) {
+            return true;
+        }
+        int card = card_values.front();
+        card_values.pop_front();
+        card_values.push_back(card);
+    }
+    return false;
 }
 
 Color get_card_color(const Card& card) noexcept
@@ -61,35 +79,28 @@ std::pair<CardDeck, CardDeck> draw_cards(CardDeck deck, size_t n) noexcept
 
 std::pair<CardDeck, CardDeck> find_sandwich(CardDeck hand) noexcept
 {
-    if (hand.size() < SANDWICH_SIZE) return std::make_pair(CardDeck::create_empty_deck(), hand);
     hand.sort([](Card card, Card card2) { return get_card_value(card) < get_card_value(card2);});
-    auto first_card_it = hand.begin();
-    auto second_card_it = std::next(first_card_it);
-    auto third_card_it = std::next(second_card_it);
-    while (first_card_it != std::prev(hand.end(), 2)) {
-        if (second_card_it == std::prev(hand.end())) {
-            ++first_card_it;
-            second_card_it = std::next(first_card_it);
-            third_card_it = std::next(second_card_it);
-            continue;
+    if (hand.size() < SANDWICH_SIZE) return std::make_pair(CardDeck::create_empty_deck(), hand);
+    auto card = hand.begin();
+    CardDeck cards;
+    while (true) {
+        if (cards.size() == SANDWICH_SIZE) {
+            check_sandwich(cards);
         }
-        if(third_card_it == hand.end()) {
-            ++second_card_it;
-            third_card_it = std::next(second_card_it);
-            continue;
-        }
-        std::vector<Card> cards = { *first_card_it, *second_card_it, *third_card_it };
-        for (int i = 0; i < 3; ++i) {
-            Card first_card = cards[i];
-            Card second_card = cards[clamp(i + 1, 0, SANDWICH_SIZE - 1)];
-            Card third_card = cards[clamp(i + 2, 0, SANDWICH_SIZE - 1)];
-            if (get_card_value(third_card) - get_card_value(second_card) == get_card_value(second_card) - get_card_value(first_card)) {
-                std::cout << to_string(first_card) << std::endl;
-                std::cout << to_string(second_card) << std::endl;
-                std::cout << to_string(third_card) << std::endl;
-            }
-        }
-        ++third_card_it;
+        cards.push_back(*card);
+        // std::vector<Card> cards = { *first_card_it, *second_card_it };
+        // for (int i = 0; i < SANDWICH_SIZE; ++i) {
+        //     Card first_card = cards[i];
+        //     Card second_card = cards[clamp(i + 1, 0, SANDWICH_SIZE - 1)];
+        //     Card third_card = cards[clamp(i + 2, 0, SANDWICH_SIZE - 1)];
+        //     if (get_card_value(third_card) - get_card_value(second_card) == get_card_value(second_card) - get_card_value(first_card)) {
+        //         std::cout << to_string(first_card) << std::endl;
+        //         std::cout << to_string(second_card) << std::endl;
+        //         std::cout << to_string(third_card) << std::endl;
+        //     }
+        // }
+        ++card;
+        break;
     }
     return std::make_pair(CardDeck::create_empty_deck(), hand);
 }

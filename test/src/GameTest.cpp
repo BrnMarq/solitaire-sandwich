@@ -103,6 +103,32 @@ int main()
         assert_equal(draw_cards(CardDeck::create_full_deck(), 2), expected_pair);
     }
 
+    std::cout << "Check sandwich tests\n";
+    {
+        CardDeck sandwich{
+            Card{Suit::Hearts, Rank::Eight},
+            Card{Suit::Clubs, Rank::Jack},
+            Card{Suit::Spades, Rank::Ace}
+        };
+        assert_equal(check_sandwich(sandwich), true);
+    }
+    {
+        CardDeck sandwich{
+            Card{Suit::Spades, Rank::King},
+            Card{Suit::Hearts, Rank::Nine},
+            Card{Suit::Spades, Rank::Nine},
+        };
+        assert_equal(check_sandwich(sandwich), false);
+    }
+    {
+        CardDeck sandwich{
+            Card{Suit::Hearts, Rank::King},
+            Card{Suit::Clubs, Rank::Queen},
+            Card{Suit::Diamonds, Rank::Eight},
+        };
+        assert_equal(check_sandwich(sandwich), false);
+    }
+
     std::cout << "Find sandwich tests\n";
     {
         CardDeck hand{

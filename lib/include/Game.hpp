@@ -9,6 +9,7 @@
 #include <CardDeck.hpp>
 
 // Warming problems
+bool check_sandwich(const CardDeck& cards);
 
 Color get_card_color(const Card& card) noexcept;
 
