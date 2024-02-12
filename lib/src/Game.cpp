@@ -122,7 +122,7 @@ bool are_all_same_color(const CardDeck& deck) noexcept
 }
 
 DeckPair create_hand(CardDeck deck) noexcept
-{   
+{
     return draw_cards(deck, HAND_SIZE);
 }
 
@@ -180,7 +180,6 @@ DeckPair find_best_sandwich(CardDeck hand) noexcept
 
 std::tuple<bool, size_t, CardDeck, CardDeck> play(CardDeck deck) noexcept
 {
-    // Write your solution here
     return std::make_tuple(false, 0, CardDeck::create_empty_deck(), deck);
 }
 

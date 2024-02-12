@@ -287,6 +287,66 @@ int main()
 
         assert_equal(find_sandwich(hand), expected_pair);
     }
+    {
+        CardDeck hand{
+            Card{Suit::Clubs, Rank::Ten},
+            Card{Suit::Spades, Rank::Nine},
+            Card{Suit::Spades, Rank::Eight},
+            Card{Suit::Diamonds, Rank::King},
+            Card{Suit::Spades, Rank::Seven},
+            Card{Suit::Spades, Rank::Three},
+            Card{Suit::Hearts, Rank::Two},
+            Card{Suit::Spades, Rank::King}
+        };
+
+        CardDeck expected_sandwich{
+            Card{Suit::Spades, Rank::Three},
+            Card{Suit::Spades, Rank::Eight},
+            Card{Suit::Diamonds, Rank::King}
+        };
+
+        CardDeck expected_hand{
+            Card{Suit::Hearts, Rank::Two},
+            Card{Suit::Spades, Rank::Seven},
+            Card{Suit::Spades, Rank::Nine},
+            Card{Suit::Clubs, Rank::Ten},
+            Card{Suit::Spades, Rank::King},
+        };
+
+        auto expected_pair = std::make_pair(expected_sandwich, expected_hand);
+
+        assert_equal(find_sandwich(hand), expected_pair);
+    }
+    {
+        CardDeck hand{
+            Card{Suit::Spades, Rank::Jack},
+            Card{Suit::Hearts, Rank::King},
+            Card{Suit::Spades, Rank::Queen},
+            Card{Suit::Clubs, Rank::Jack},
+            Card{Suit::Hearts, Rank::Ace},
+            Card{Suit::Clubs, Rank::Queen},
+            Card{Suit::Hearts, Rank::Jack},
+            Card{Suit::Diamonds, Rank::Seven}
+        };
+
+        CardDeck expected_sandwich{
+            Card{Suit::Hearts, Rank::Ace},
+            Card{Suit::Diamonds, Rank::Seven},
+            Card{Suit::Hearts, Rank::King}
+        };
+
+        CardDeck expected_hand{
+            Card{Suit::Spades, Rank::Jack},
+            Card{Suit::Clubs, Rank::Jack},
+            Card{Suit::Hearts, Rank::Jack},
+            Card{Suit::Spades, Rank::Queen},
+            Card{Suit::Clubs, Rank::Queen},
+        };
+
+        auto expected_pair = std::make_pair(expected_sandwich, expected_hand);
+
+        assert_equal(find_sandwich(hand), expected_pair);
+    }
 
     std::cout << "Find best sandwich tests\n";
     {
@@ -332,16 +392,16 @@ int main()
         };
 
         CardDeck expected_sandwich{
-            Card{Suit::Spades, Rank::Nine},
-            Card{Suit::Clubs, Rank::Jack},
-            Card{Suit::Spades, Rank::King}
+            Card{Suit::Spades, Rank::Ace},
+            Card{Suit::Clubs, Rank::Queen},
+            Card{Suit::Spades, Rank::King},
         };
 
         CardDeck expected_hand{
-            Card{Suit::Spades, Rank::Ace},
             Card{Suit::Hearts, Rank::Nine},
+            Card{Suit::Spades, Rank::Nine},
             Card{Suit::Hearts, Rank::Eight},
-            Card{Suit::Clubs, Rank::Queen},
+            Card{Suit::Clubs, Rank::Jack},
             Card{Suit::Diamonds, Rank::Eight}
         };
 
