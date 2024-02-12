@@ -7,12 +7,24 @@
 #include <Game.hpp>
 #include <Settings.hpp>
 
+typedef std::function<bool(Card)> CardFilter;
+typedef std::pair<CardDeck, CardDeck> DeckPair;
 // Settings
+CardFilter filter(Suit suit) { return [&](Card card) { return card.get_suit() == suit; }; };
+CardFilter filter(Color color) { return [&](Card card) { return get_card_color(card) == color; }; };
 std::unordered_map<Suit, Color> SUIT_COLORS = {
     {Suit::Clubs, Color::Black},
     {Suit::Spades, Color::Black},
     {Suit::Hearts, Color::Red},
     {Suit::Diamonds, Color::Red}
+};
+std::list<std::variant<Suit, Color>> SANDWICH_PRIORITIES = {
+    Suit::Spades,
+    Suit::Hearts,
+    Suit::Clubs,
+    Suit::Diamonds,
+    Color::Red,
+    Color::Black,
 };
 int HAND_SIZE = 8;
 int SANDWICH_SIZE = 3;
@@ -27,7 +39,7 @@ std::vector<int> init_pointer_register() {
     }
     return pointer_register;
 }
-std::pair<CardDeck, CardDeck> remove_sandwich(CardDeck sandwich, CardDeck hand) {
+DeckPair remove_sandwich(CardDeck sandwich, CardDeck hand) {
     hand.remove_if([&](const Card& card){
         return std::find(sandwich.begin(), sandwich.end(), card)!= sandwich.end();
     });
@@ -109,12 +121,12 @@ bool are_all_same_color(const CardDeck& deck) noexcept
     return std::adjacent_find(deck.begin(), deck.end(), are_different_colors) == deck.end();
 }
 
-std::pair<CardDeck, CardDeck> create_hand(CardDeck deck) noexcept
+DeckPair create_hand(CardDeck deck) noexcept
 {   
     return draw_cards(deck, HAND_SIZE);
 }
 
-std::pair<CardDeck, CardDeck> draw_cards(CardDeck deck, size_t n) noexcept
+DeckPair draw_cards(CardDeck deck, size_t n) noexcept
 {
     CardDeck hand = CardDeck::create_empty_deck();
     for (int i = 0; i < n; i++) {
@@ -125,10 +137,11 @@ std::pair<CardDeck, CardDeck> draw_cards(CardDeck deck, size_t n) noexcept
     return std::make_pair(hand, deck);
 }
 
-std::pair<CardDeck, CardDeck> find_sandwich(CardDeck hand) noexcept
+DeckPair find_sandwich(CardDeck hand) noexcept
 {
     hand.sort([](Card card, Card card2) { return get_card_value(card) < get_card_value(card2);});
     if (hand.size() < SANDWICH_SIZE) return std::make_pair(CardDeck::create_empty_deck(), hand);
+
     auto card = hand.begin();
     CardDeck cards = CardDeck::create_empty_deck();
     CardDeck last_cards = copy_last_n(hand , SANDWICH_SIZE);
@@ -148,13 +161,23 @@ std::pair<CardDeck, CardDeck> find_sandwich(CardDeck hand) noexcept
         ++card;
     }
     return std::make_pair(CardDeck::create_empty_deck(), hand);
+} 
+
+DeckPair find_best_sandwich(CardDeck hand) noexcept
+{
+    for (const auto& filter_param : SANDWICH_PRIORITIES) {
+        CardDeck filtered_hand;
+        std::visit([&](auto&& param) {
+            std::copy_if(hand.begin(), hand.end(), std::back_inserter(filtered_hand), filter(param));
+        }, filter_param);
+        DeckPair result = find_sandwich(filtered_hand);
+        const auto& [sandwich, rest] = result;
+        if (rest.size() != filtered_hand.size()) return remove_sandwich(sandwich, hand);
+    }
+    
+    return find_sandwich(hand);
 }
 
-std::pair<CardDeck, CardDeck> find_best_sandwich(CardDeck hand) noexcept
-{
-    // Write your solution here
-    return std::make_pair(CardDeck::create_empty_deck(), hand);
-}
 std::tuple<bool, size_t, CardDeck, CardDeck> play(CardDeck deck) noexcept
 {
     // Write your solution here
@@ -166,16 +189,3 @@ std::tuple<bool, size_t, CardDeck, CardDeck> play_optimally(CardDeck deck) noexc
     // Write your solution here
     return std::make_tuple(false, 0, CardDeck::create_empty_deck(), deck);
 }
-
-
-        // std::vector<Card> cards = { *first_card_it, *second_card_it };
-        // for (int i = 0; i < SANDWICH_SIZE; ++i) {
-        //     Card first_card = cards[i];
-        //     Card second_card = cards[clamp(i + 1, 0, SANDWICH_SIZE - 1)];
-        //     Card third_card = cards[clamp(i + 2, 0, SANDWICH_SIZE - 1)];
-        //     if (get_card_value(third_card) - get_card_value(second_card) == get_card_value(second_card) - get_card_value(first_card)) {
-        //         std::cout << to_string(first_card) << std::endl;
-        //         std::cout << to_string(second_card) << std::endl;
-        //         std::cout << to_string(third_card) << std::endl;
-        //     }
-        // }
