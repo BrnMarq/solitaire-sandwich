@@ -7,6 +7,7 @@
 #include <Game.hpp>
 #include <Settings.hpp>
 
+// Settings
 std::unordered_map<Suit, Color> SUIT_COLORS = {
     {Suit::Clubs, Color::Black},
     {Suit::Spades, Color::Black},
@@ -15,8 +16,55 @@ std::unordered_map<Suit, Color> SUIT_COLORS = {
 };
 int HAND_SIZE = 8;
 int SANDWICH_SIZE = 3;
+
+// Helpers
 bool are_different_suits(Card first, Card second) { return first.get_suit() != second.get_suit(); }
 bool are_different_colors(Card first, Card second) { return get_card_color(first) != get_card_color(second); }
+std::vector<int> init_pointer_register() {
+    std::vector<int> pointer_register;
+    for (int i = 0; i < SANDWICH_SIZE - 1; ++i) {
+        pointer_register.push_back(SANDWICH_SIZE - 2 - i);
+    }
+    return pointer_register;
+}
+std::pair<CardDeck, CardDeck> remove_sandwich(CardDeck sandwich, CardDeck hand) {
+    hand.remove_if([&](const Card& card){
+        return std::find(sandwich.begin(), sandwich.end(), card)!= sandwich.end();
+    });
+    return std::make_pair(sandwich, hand);
+}
+int update_pointer_register(std::vector<int>& pointer_register, int pointer_number) {
+    int position = pointer_number - 1;
+    int next_number = pointer_register[position] + 1;
+    ++pointer_register[position];
+    for (int i = position - 1; i >= 0; --i) {
+        pointer_register[i] = pointer_register[i + 1] + 1;
+    }
+    return next_number;
+}
+int get_same_amount(CardDeck deck1, CardDeck deck2) {
+    int same_amount = 0;
+    auto it1 = deck1.end();
+    auto it2 = deck2.end();
+    do {
+        --it1;
+        --it2;
+        if (*it1 != *it2) return same_amount;
+        ++same_amount;
+    }
+    while(it1 != deck1.begin() && it2 != deck2.begin());
+    return same_amount;
+}
+CardDeck copy_last_n(CardDeck deck, int n) {
+    CardDeck copy = CardDeck::create_empty_deck();
+    auto it = deck.end();
+    while (n > 0) {
+        --it;
+        copy.push_front(*it);
+        --n;
+    }
+    return copy;
+}
 int clamp(int n, int min, int max) {
     int m = abs(n);
     if (n < min) return clamp(max - m, min, max);
@@ -82,25 +130,22 @@ std::pair<CardDeck, CardDeck> find_sandwich(CardDeck hand) noexcept
     hand.sort([](Card card, Card card2) { return get_card_value(card) < get_card_value(card2);});
     if (hand.size() < SANDWICH_SIZE) return std::make_pair(CardDeck::create_empty_deck(), hand);
     auto card = hand.begin();
-    CardDeck cards;
+    CardDeck cards = CardDeck::create_empty_deck();
+    CardDeck last_cards = copy_last_n(hand , SANDWICH_SIZE);
+    std::vector<int> pointer_register = init_pointer_register();
     while (true) {
         if (cards.size() == SANDWICH_SIZE) {
-            check_sandwich(cards);
+            int same_amount = get_same_amount(cards, last_cards);
+            if (check_sandwich(cards)) return remove_sandwich(cards, hand);
+            if (same_amount == SANDWICH_SIZE) break;
+            cards.erase(std::prev(cards.end(), same_amount + 1), cards.end());
+            if (same_amount > 0) {
+                int next_card = update_pointer_register(pointer_register, same_amount);
+                card = std::next(hand.begin(), next_card);
+            }
         }
         cards.push_back(*card);
-        // std::vector<Card> cards = { *first_card_it, *second_card_it };
-        // for (int i = 0; i < SANDWICH_SIZE; ++i) {
-        //     Card first_card = cards[i];
-        //     Card second_card = cards[clamp(i + 1, 0, SANDWICH_SIZE - 1)];
-        //     Card third_card = cards[clamp(i + 2, 0, SANDWICH_SIZE - 1)];
-        //     if (get_card_value(third_card) - get_card_value(second_card) == get_card_value(second_card) - get_card_value(first_card)) {
-        //         std::cout << to_string(first_card) << std::endl;
-        //         std::cout << to_string(second_card) << std::endl;
-        //         std::cout << to_string(third_card) << std::endl;
-        //     }
-        // }
         ++card;
-        break;
     }
     return std::make_pair(CardDeck::create_empty_deck(), hand);
 }
@@ -121,3 +166,16 @@ std::tuple<bool, size_t, CardDeck, CardDeck> play_optimally(CardDeck deck) noexc
     // Write your solution here
     return std::make_tuple(false, 0, CardDeck::create_empty_deck(), deck);
 }
+
+
+        // std::vector<Card> cards = { *first_card_it, *second_card_it };
+        // for (int i = 0; i < SANDWICH_SIZE; ++i) {
+        //     Card first_card = cards[i];
+        //     Card second_card = cards[clamp(i + 1, 0, SANDWICH_SIZE - 1)];
+        //     Card third_card = cards[clamp(i + 2, 0, SANDWICH_SIZE - 1)];
+        //     if (get_card_value(third_card) - get_card_value(second_card) == get_card_value(second_card) - get_card_value(first_card)) {
+        //         std::cout << to_string(first_card) << std::endl;
+        //         std::cout << to_string(second_card) << std::endl;
+        //         std::cout << to_string(third_card) << std::endl;
+        //     }
+        // }

@@ -107,8 +107,8 @@ int main()
     {
         CardDeck sandwich{
             Card{Suit::Hearts, Rank::Eight},
+            Card{Suit::Spades, Rank::Ace},
             Card{Suit::Clubs, Rank::Jack},
-            Card{Suit::Spades, Rank::Ace}
         };
         assert_equal(check_sandwich(sandwich), true);
     }
@@ -127,6 +127,101 @@ int main()
             Card{Suit::Diamonds, Rank::Eight},
         };
         assert_equal(check_sandwich(sandwich), false);
+    }
+
+    std::cout << "Get same amount tests\n";
+    {
+        CardDeck first_deck{
+            Card{Suit::Spades, Rank::King},
+            Card{Suit::Hearts, Rank::Nine},
+            Card{Suit::Spades, Rank::Nine},
+        };
+        CardDeck second_deck{
+            Card{Suit::Clubs, Rank::Queen},
+            Card{Suit::Hearts, Rank::Nine},
+            Card{Suit::Spades, Rank::Nine},
+        };
+        assert_equal(get_same_amount(first_deck, second_deck), 2);
+    }
+    {
+        CardDeck first_deck{
+            Card{Suit::Spades, Rank::King},
+            Card{Suit::Hearts, Rank::Nine},
+            Card{Suit::Spades, Rank::Nine},
+        };
+        CardDeck second_deck{
+            Card{Suit::Clubs, Rank::Queen},
+            Card{Suit::Hearts, Rank::Eight},
+            Card{Suit::Spades, Rank::Queen},
+        };
+        assert_equal(get_same_amount(first_deck, second_deck), 0);
+    }
+    {
+        CardDeck first_deck{
+            Card{Suit::Spades, Rank::King},
+            Card{Suit::Hearts, Rank::Nine},
+            Card{Suit::Spades, Rank::Nine},
+        };
+        CardDeck second_deck{
+            Card{Suit::Spades, Rank::King},
+            Card{Suit::Hearts, Rank::Nine},
+            Card{Suit::Spades, Rank::Nine},
+        };
+        assert_equal(get_same_amount(first_deck, second_deck), 3);
+    }
+
+    std::cout << "Copy last n tests\n";
+    {
+        CardDeck original{
+            Card{Suit::Spades, Rank::King},
+            Card{Suit::Hearts, Rank::Nine},
+            Card{Suit::Spades, Rank::Nine},
+            Card{Suit::Hearts, Rank::Eight},
+            Card{Suit::Spades, Rank::Queen},
+            Card{Suit::Hearts, Rank::King},
+            Card{Suit::Clubs, Rank::Queen},
+            Card{Suit::Diamonds, Rank::Eight},
+        };
+
+        CardDeck expected_copy{
+            Card{Suit::Hearts, Rank::King},
+            Card{Suit::Clubs, Rank::Queen},
+            Card{Suit::Diamonds, Rank::Eight},
+        };
+
+        assert_equal(to_string(copy_last_n(original, 3)), to_string(expected_copy));
+    }
+    {
+        CardDeck original{
+            Card{Suit::Spades, Rank::Ace},
+            Card{Suit::Hearts, Rank::Nine},
+            Card{Suit::Spades, Rank::Nine},
+            Card{Suit::Hearts, Rank::Eight},
+            Card{Suit::Spades, Rank::Queen},
+            Card{Suit::Hearts, Rank::King},
+            Card{Suit::Clubs, Rank::Jack},
+            Card{Suit::Diamonds, Rank::Eight}
+        };
+
+        CardDeck expected_copy{
+            Card{Suit::Hearts, Rank::King},
+            Card{Suit::Clubs, Rank::Jack},
+            Card{Suit::Diamonds, Rank::Eight}
+        };
+
+        assert_equal(to_string(copy_last_n(original, 3)), to_string(expected_copy));
+    }
+
+    std::cout << "Update pointer register tests\n";
+    {
+        std::vector<int> pointer_register = { 2, 1, 0 };
+        std::vector<int> expected_pointer_register = { 3, 2, 0};
+
+        update_pointer_register(pointer_register, 2);
+
+        for (int i = 0; i < 3; ++i) {
+            assert_equal(pointer_register[i], expected_pointer_register[i]);
+        }
     }
 
     std::cout << "Find sandwich tests\n";
@@ -149,30 +244,46 @@ int main()
     {
         CardDeck hand{
             Card{Suit::Spades, Rank::Ace},
-            Card{Suit::Hearts, Rank::Nine},
-            Card{Suit::Spades, Rank::Nine},
-            Card{Suit::Hearts, Rank::Eight},
-            Card{Suit::Spades, Rank::Queen},
-            Card{Suit::Hearts, Rank::King},
-            Card{Suit::Clubs, Rank::Jack},
-            Card{Suit::Diamonds, Rank::Eight}
+            Card{Suit::Hearts, Rank::Ace},
+            Card{Suit::Hearts, Rank::Two},
+            Card{Suit::Spades, Rank::Two},
+            Card{Suit::Spades, Rank::Four},
+            Card{Suit::Hearts, Rank::Ten},
+            Card{Suit::Clubs, Rank::Ten},
+            Card{Suit::Diamonds, Rank::Ten}
         };
 
         CardDeck expected_sandwich{
-            Card{Suit::Hearts, Rank::Eight},
-            Card{Suit::Clubs, Rank::Jack},
-            Card{Suit::Spades, Rank::Ace}
+            Card{Suit::Hearts, Rank::Ten},
+            Card{Suit::Clubs, Rank::Ten},
+            Card{Suit::Diamonds, Rank::Ten}
         };
 
         CardDeck expected_hand{
-            Card{Suit::Hearts, Rank::Nine},
-            Card{Suit::Spades, Rank::Nine},
-            Card{Suit::Spades, Rank::Queen},
-            Card{Suit::Hearts, Rank::King},
-            Card{Suit::Diamonds, Rank::Eight}
+            Card{Suit::Spades, Rank::Ace},
+            Card{Suit::Hearts, Rank::Ace},
+            Card{Suit::Hearts, Rank::Two},
+            Card{Suit::Spades, Rank::Two},
+            Card{Suit::Spades, Rank::Four},
         };
 
         auto expected_pair = std::make_pair(expected_sandwich, expected_hand);
+
+        assert_equal(find_sandwich(hand), expected_pair);
+    }
+    {
+        CardDeck hand{
+            Card{Suit::Spades, Rank::King},
+            Card{Suit::Hearts, Rank::Nine},
+            Card{Suit::Spades, Rank::Nine},
+            Card{Suit::Hearts, Rank::Eight},
+            Card{Suit::Spades, Rank::Queen},
+            Card{Suit::Hearts, Rank::King},
+            Card{Suit::Clubs, Rank::Queen},
+            Card{Suit::Diamonds, Rank::Eight},
+        };
+
+        auto expected_pair = std::make_pair(CardDeck::create_empty_deck(), hand);
 
         assert_equal(find_sandwich(hand), expected_pair);
     }

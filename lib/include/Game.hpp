@@ -9,7 +9,13 @@
 #include <CardDeck.hpp>
 
 // Warming problems
+CardDeck copy_last_n(CardDeck deck, int n);
+
+int update_pointer_register(std::vector<int>& pointer_register, int pointer_number);
+
 bool check_sandwich(const CardDeck& cards);
+
+int get_same_amount(CardDeck deck1, CardDeck deck2);
 
 Color get_card_color(const Card& card) noexcept;
 
